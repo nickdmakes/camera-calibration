@@ -1,0 +1,48 @@
+# To create this code, I used: 
+# 1) https://www.geeksforgeeks.org/convert-json-to-csv-in-python/
+import csv
+import json
+import numpy as np
+
+# function JSONToCSV
+# This class takes in the filename and outputs a CSV File containing the converted values of the Polytrope 
+def JSONToCSV(fileName):
+    # Opening JSON file and loading the data
+    # into the variable data
+    with open(fileName) as json_file:
+        data = json.load(json_file)
+    
+    focusMapVals = data['focus']['map'] # This contains the focus -> map values, providing easy access to values, and motorPos data.
+    focusVals_data = focusMapVals['values'] # each position of the focus data (float)
+    motorpos_data = focusMapVals['motor_pos'] # each motor position corresponding to the previous focus data (float)
+
+    irisVals_data = data['iris']['map']['values'] # each position of the focus data (float)
+
+    focusParams = data['focus']['curve']['parameters'] # the parameters of the focusdata
+    irisParams = data['iris']['curve']['parameters'] # the parameters of the iris data
+
+    # Opening corresponding data file for writing
+    data_file = open('data_file.csv', 'w')
+
+    # create the csv writer object
+    csv_writer = csv.writer(data_file, lineterminator='\n')
+    
+    csv_writer.writerow(['Encoder', 'focusVals', 'focusTestVals', 'irisVals', 'irisTestVals']) # headers to the CSV file
+
+    for motorPosVal, focusVal, irisVal in zip(motorpos_data, focusVals_data, irisVals_data):
+        # Using the Polytrope function to calculate the expected focus and iris value. 
+        focusTestVal = PolytropeCalculator(focusVal, a = focusParams[0], b = focusParams[1], c = focusParams[2])
+        irisTestVal  = PolytropeCalculator(irisVal, a = irisParams[0], b = irisParams[1], c = irisParams[2])
+        # 
+        valsList = [motorPosVal, focusVal, focusTestVal, irisVal, irisTestVal]
+
+        csv_writer.writerow(valsList)
+
+    data_file.close()
+
+def PolytropeCalculator(x,a,b,c):
+    return a/ np.power(x,b) + c
+
+
+if __name__== "__main__":
+    JSONToCSV('encoder_testing.json')

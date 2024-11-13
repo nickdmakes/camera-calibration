@@ -1,0 +1,67 @@
+name: Create Release Branch
+on:
+  workflow_dispatch:
+    inputs:
+      versionName:
+        description: 'Name of version  (ie 1.2.0)'
+        required: true
+      versionCode:
+        description: 'Version number (10200)'
+        required: true
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+      with:
+        ref: dev
+    - name: Create release branch
+      run: git checkout -b release/v${{ github.event.inputs.versionName }}
+    - name: Initialize mandatory git config
+      run: |
+       git config user.name "GitHub Actions"
+       git config user.email noreply@github.com
+    - name: Change version number and name
+      run: |
+        sed -i "s/APP_VERSION=.*/APP_VERSION=${{ github.event.inputs.versionName }}/" config.env
+        sed -i "s/APP_VERSION_CODE=.*/APP_VERSION_CODE=${{ github.event.inputs.versionCode }}/" config.env
+    - name: Update Changelog
+      uses: thomaseizinger/keep-a-changelog-new-release@v1
+      with:
+        version: ${{ github.event.inputs.versionName }}
+    - name: Commit changelog and manifest files
+      id: make-commit
+      run: |
+        git add config.env
+        git add CHANGELOG.md
+        git commit --message "Prepare release ${{ github.event.inputs.versionName }}"
+        echo "::set-output name=commit::$(git rev-parse HEAD)"
+    - name: Push new branch
+      run: git push origin release/v${{ github.event.inputs.versionName }}
+    - name: Create pull request into main
+      uses: thomaseizinger/create-pull-request@1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        github-token: ${{ env.GITHUB_TOKEN }}
+        head: release/v${{ github.event.inputs.versionName }}
+        base: main
+        title: v${{ github.event.inputs.versionName }} into main
+        body: |
+            This PR was created by the create_release_branch.yml workflow.
+            APP_VERSION in config.env has been changed to ${{ github.event.inputs.versionName }}. 
+            commit: ${{ steps.make-commit.outputs.commit }}.
+    - name: Create pull request to dev
+      uses: thomaseizinger/create-pull-request@1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          github-token: ${{ env.GITHUB_TOKEN }}
+          head: release/v${{ github.event.inputs.versionName }}
+          base: dev
+          title: v${{ github.event.inputs.versionName }} into dev
+          body: |
+            This PR was created by the create_release_branch.yml workflow.
+            APP_VERSION in config.env has been changed to ${{ github.event.inputs.versionName }}. 
+            commit: ${{ steps.make-commit.outputs.commit }}.

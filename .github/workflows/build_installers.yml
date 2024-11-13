@@ -1,0 +1,74 @@
+name: Build Platform Installer
+on:
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Windows
+    runs-on: windows-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Load local config env variables
+      uses: aarcangeli/load-dotenv@v1.0.0
+      with:
+        filenames: config.env
+        quiet: false
+        if-file-not-found: error
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+            python -m pip install --upgrade pip
+            pip install -r requirements\build-requirements.txt
+    - name: Build Windows app bundle
+      run: |
+            pyinstaller build_app.spec
+    - name: Make directory for installer
+      run: |
+            mkdir dist/exe
+    - name: Compile .ISS to .EXE installer
+      uses: Minionguyjpro/Inno-Setup-Action@v1.2.2
+      with:
+        path: buildexe.iss
+        options: /DName=${{env.APP_NAME}} /DAppVersion=${{env.APP_VERSION}} /DExeName=${{env.APP_NAME}}.exe /DSetupFileName=${{env.APP_NAME}}-setup
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Windows-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}
+        path: dist/exe/${{env.APP_NAME}}-setup.exe
+  # build-macos:
+  #   name: MacOS
+  #   runs-on: macos-13
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #   - name: Set up Python 3.9
+  #     uses: actions/setup-python@v2
+  #     with:
+  #       python-version: 3.9
+  #   - name: Install dependencies
+  #     run: |
+  #           python -m pip install --upgrade pip
+  #           pip install -r requirements/build-requirements.txt
+  #           brew install create-dmg
+  #   - name: Load local config env variables
+  #     uses: aarcangeli/load-dotenv@v1.0.0
+  #     with:
+  #       filenames: config.env
+  #       quiet: false
+  #       if-file-not-found: error
+  #   - name: Build MacOS app bundle
+  #     run: |
+  #           pyinstaller build_app.spec
+  #   - name: Create DMG
+  #     run: |
+  #           source builddmg.sh
+  #   - name: Upload artifact
+  #     uses: actions/upload-artifact@v4
+  #     with:
+  #       name: MacOS-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}
+  #       path: dist/dmg/${{env.APP_NAME}}.dmg

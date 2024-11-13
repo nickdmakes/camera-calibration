@@ -1,0 +1,78 @@
+name: Tag Release
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  # Call the build_installers.yml workflow
+  build_installers:
+    uses: ./.github/workflows/build_installers.yml
+  tag_release:
+    needs: build_installers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Initialize mandatory git config
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email noreply@github.com
+      - name: Load local config env variables
+        uses: aarcangeli/load-dotenv@v1.0.0
+        with:
+          filenames: config.env
+          quiet: false
+          if-file-not-found: error
+      - name: Extract release notes
+        id: extract_release_notes
+        uses: ffurrer2/extract-release-notes@v2
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.APP_VERSION }}
+          release_name: v${{ env.APP_VERSION }}
+          body: ${{ steps.extract_release_notes.outputs.release_notes }}
+          draft: false
+          prerelease: false
+      - name: Download windows installer artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: Windows-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}
+          path: dist/exe
+      - name: Zip the installer
+        run: |
+          cd dist/exe
+          zip -r ${{env.APP_NAME}}-setup.zip ${{env.APP_NAME}}-setup.exe
+      - name: Upload Windows release assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/exe/${{env.APP_NAME}}-setup.zip
+          asset_name: Windows-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}.zip
+          asset_content_type: application/gzip
+      # - name: Download macOS installer artifact
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: MacOS-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}
+      #     path: dist/dmg
+      # - name: Zip the installer
+      #   run: |
+      #     cd dist/dmg
+      #     zip -r ${{env.APP_NAME}}-setup.zip ${{env.APP_NAME}}.dmg
+      # - name: Upload macOS release assets
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: dist/dmg/${{env.APP_NAME}}-setup.zip
+      #     asset_name: MacOS-${{env.APP_NAME}}-Installer-v${{env.APP_VERSION}}.zip
+      #     asset_content_type: application/gzip
