@@ -1,27 +1,13 @@
 # camera-calibration
-Serial communication code for controlling Arri camera motors.
+
+## Motivation
+Calibrating camera intrinsics to produce a camera model is an essential, time-consuming and labor-intensive process in virtual film production. Since calibration needs to be performed multiple times across different system setups within tight time constraints, automating the process would reduce the time and cost of virtual film production. The Automated Camera Calibration (ACC) software was developed to automate lens adjustments through motor-enabled camera components and conduct real-time image detection.
+
+> [!IMPORTANT]  
+> This application currently only works on Windows 10/11 operating systems
 
 ## Installation
-**Note:** This project requires Python 3.9 and install instructions are for a linux based system.
+Navigate to the [Releases page](https://github.com/nickdmakes/camera-calibration/releases) and installer the Windows Installer for the latest release
 
-1. Clone the repository to your local machine and navigate into the project.
-```
-git clone https://github.com/iastate/camera-calibration.git
-cd camera-calibration
-```
-
-2. Check that you have Python3.9 and Virtualenv installed on your machine.
-```
-python --version
-```
-
-3. Create a virtual environment and activate it.
-```
-python -m venv .venv
-.venv\Scripts\activate
-```
-
-4. Install the required packages.
-```
-pip install -r requirements.txt
-```
+## Manual
+Manual for appplication use can be found in the ./manuals directory
