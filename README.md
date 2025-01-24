@@ -10,4 +10,11 @@ Calibrating camera intrinsics to produce a camera model is an essential, time-co
 Navigate to the [Releases page](https://github.com/nickdmakes/camera-calibration/releases) and installer the Windows Installer for the latest release
 
 ## Manual
-Manual for appplication use can be found in the ./manuals directory
+Manual for appplication use can be found in the public directory as [Camera_Calibration_Manual.pdf](public/Camera_Calibration_Manual.pdf)
+
+## User Interface Images
+<p float="left">
+  <img src="public/calibrate_full.png" width="300" />
+  <img src="public/image_capture.png" width="300" />
+  <img src="public/lens_encoder.png" width="300" />
+</p>
