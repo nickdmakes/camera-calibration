@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.5.0] - 2025-01-24
+
 ## [1.4.0] - 2024-09-11
 
 ## [1.3.0-alpha] - 2024-07-03
@@ -18,7 +20,9 @@
 
 ### Added
 
-[Unreleased]: https://github.com/iastate/camera-calibration/compare/1.4.0...HEAD
+[Unreleased]: https://github.com/nickdmakes/camera-calibration/compare/1.5.0...HEAD
+
+[1.5.0]: https://github.com/nickdmakes/camera-calibration/compare/1.4.0...1.5.0
 
 [1.4.0]: https://github.com/iastate/camera-calibration/compare/1.3.0-alpha...1.4.0
 
